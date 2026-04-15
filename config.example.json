@@ -1,0 +1,7 @@
+{
+  "apiKey": "your_api_key",
+  "apiSecret": "your_api_secret",
+  "baseUrl": "https://api.example.com",
+  "tlsReject": true,
+  "rateLimitMs": 100
+}

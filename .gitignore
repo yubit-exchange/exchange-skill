@@ -1,0 +1,9 @@
+node_modules/
+config.json
+.mcp.json
+.env
+.data/
+.idea/
+
+/tmp
+.claude

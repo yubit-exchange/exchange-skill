@@ -1,0 +1,53 @@
+{
+  "name": "@yubit/exchange-skill",
+  "version": "1.0.3",
+  "description": "Yubit exchange MCP Server for market data, wallet, perp trading, and diagnostics",
+  "homepage": "https://github.com/yubit-exchange/exchange-skill",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yubit-exchange/exchange-skill.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yubit-exchange/exchange-skill/issues"
+  },
+  "main": "mcp-server.js",
+  "bin": {
+    "yubit": "bin/cli.js"
+  },
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "exchange",
+    "trading",
+    "openclaw",
+    "codex",
+    "claude-code",
+    "yubit"
+  ],
+  "engines": {
+    "node": ">=19.0.0"
+  },
+  "scripts": {
+    "start": "node mcp-server.js",
+    "setup": "node bin/cli.js setup",
+    "test": "node test/signer.test.js && node test/validate.test.js && node test/trace-store.test.js && node test/http.test.js && node test/system.test.js && node test/setup-clients.test.js && node test/trade.test.js && node test/asset.test.js && node test/perp-query.test.js && node test/spot.test.js && node test/tradfi.test.js && node test/earn.test.js",
+    "test:smoke": "node test/smoke.test.js",
+    "test:all": "node test/signer.test.js && node test/validate.test.js && node test/trace-store.test.js && node test/http.test.js && node test/system.test.js && node test/setup-clients.test.js && node test/trade.test.js && node test/asset.test.js && node test/perp-query.test.js && node test/spot.test.js && node test/tradfi.test.js && node test/earn.test.js && node test/smoke.test.js"
+  },
+  "files": [
+    "mcp-server.js",
+    "bin/",
+    "lib/",
+    "tools/",
+    "skills/",
+    "config.example.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.28.0"
+  }
+}
