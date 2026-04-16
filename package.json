@@ -1,6 +1,6 @@
 {
   "name": "@yubit/exchange-skill",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Yubit exchange MCP Server for market data, wallet, perp trading, and diagnostics",
   "homepage": "https://github.com/yubit-exchange/exchange-skill",
   "repository": {

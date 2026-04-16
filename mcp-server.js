@@ -172,7 +172,7 @@ async function main() {
   Object.assign(HANDLERS, DIAGNOSTIC_HANDLERS);
 
   const server = new Server(
-    { name: 'yubit', version: '1.0.3' },
+    { name: 'yubit', version: '1.0.5' },
     { capabilities: { tools: {} } },
   );
 

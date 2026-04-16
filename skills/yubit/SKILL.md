@@ -7,7 +7,7 @@ description: >
   orders, manage leverage or mode, set take-profit / stop-loss, or troubleshoot
   exchange requests.
 license: MIT
-metadata: {"author":"yubit","version":"1.0.3","openclaw":{"emoji":"📈","requires":{"bins":["yubit"]},"install":[{"id":"npm","kind":"node","package":"@yubit/exchange-skill","bins":["yubit"],"label":"Install yubit CLI (npm)"}]}}
+metadata: {"author":"yubit","version":"1.0.5","openclaw":{"emoji":"📈","requires":{"bins":["yubit"]},"install":[{"id":"npm","kind":"node","package":"@yubit/exchange-skill","bins":["yubit"],"label":"Install yubit CLI (npm)"}]}}
 ---
 
 # Yubit

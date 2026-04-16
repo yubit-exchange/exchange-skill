@@ -1,81 +1,83 @@
 # Yubit Exchange Skill
 
-Yubit 交易 MCP Server — 让 AI 助手通过自然语言查询行情、管理资金、查询现货 / TradFi / 理财资产、执行永续合约交易。
+[English](README.md) | [中文](README.zh.md)
 
-支持 [OpenClaw](https://github.com/openclaw/openclaw) / [Claude Code](https://claude.ai/claude-code) / [OpenAI Codex](https://developers.openai.com/codex/cli) / [Cursor](https://cursor.sh) / [LobeChat Desktop](https://github.com/lobehub/lobe-chat) 等所有兼容 [MCP](https://modelcontextprotocol.io) 协议的 AI 工具。
+The Yubit Exchange MCP Server lets AI assistants query market data, manage funds, check balances across spot, TradFi, and earn accounts, and execute perpetual trades using natural language.
 
-## 目录
+It works with [OpenClaw](https://github.com/openclaw/openclaw), [Claude Code](https://claude.ai/claude-code), [OpenAI Codex](https://developers.openai.com/codex/cli), [Cursor](https://cursor.sh), [LobeChat Desktop](https://github.com/lobehub/lobe-chat), and any other AI tool compatible with the [MCP](https://modelcontextprotocol.io) protocol.
 
-- [1. 功能概览](#1-功能概览)
-- [2. 模块](#2-模块)
-- [3. 快速开始](#3-快速开始)
-- [4. 手动接入](#4-手动接入)
+## Table of Contents
+
+- [1. Feature Overview](#1-feature-overview)
+- [2. Modules](#2-modules)
+- [3. Quick Start](#3-quick-start)
+- [4. Manual Setup](#4-manual-setup)
   - [4.1 OpenClaw](#41-openclaw)
   - [4.2 Claude Code](#42-claude-code)
   - [4.3 OpenAI Codex CLI](#43-openai-codex-cli)
   - [4.4 Cursor](#44-cursor)
   - [4.5 LobeChat Desktop](#45-lobechat-desktop)
-- [5. 自然语言示例](#5-自然语言示例)
-- [6. 可用工具](#6-可用工具)
-  - [6.1 行情](#61-行情公开无需认证)
-  - [6.2 钱包](#62-钱包需要-api-key)
-  - [6.3 现货](#63-现货需要-api-key)
-  - [6.4 TradFi](#64-tradfi需要-api-key)
-  - [6.5 理财](#65-理财需要-api-key)
-  - [6.6 永续查询](#66-永续查询需要-api-key)
-  - [6.7 永续交易](#67-永续交易需要-api-key--exchange_enable_tradetrue)
-  - [6.8 诊断](#68-诊断无需认证)
-- [7. 权限分级](#7-权限分级)
-- [8. 安全机制](#8-安全机制)
-- [9. 环境变量](#9-环境变量)
+- [5. Natural Language Examples](#5-natural-language-examples)
+- [6. Available Tools](#6-available-tools)
+  - [6.1 Market](#61-market-public-no-auth-required)
+  - [6.2 Wallet](#62-wallet-api-key-required)
+  - [6.3 Spot](#63-spot-api-key-required)
+  - [6.4 TradFi](#64-tradfi-api-key-required)
+  - [6.5 Earn](#65-earn-api-key-required)
+  - [6.6 Perp Query](#66-perp-query-api-key-required)
+  - [6.7 Perp Trade](#67-perp-trade-api-key--exchange_enable_tradetrue)
+  - [6.8 Diagnostics](#68-diagnostics-no-auth-required)
+- [7. Permission Levels](#7-permission-levels)
+- [8. Security Mechanisms](#8-security-mechanisms)
+- [9. Environment Variables](#9-environment-variables)
 - [10. Agent Skills](#10-agent-skills)
-- [11. CLI 命令](#11-cli-命令)
-- [12. 项目结构](#12-项目结构)
-- [13. 测试](#13-测试)
-- [14. 开发贡献](#14-开发贡献)
-- [15. 常见问题](#15-常见问题)
-- [16. 签名算法](#16-签名算法)
+- [11. CLI Commands](#11-cli-commands)
+- [12. Project Structure](#12-project-structure)
+- [13. Testing](#13-testing)
+- [14. Contributing](#14-contributing)
+- [15. FAQ](#15-faq)
+- [16. Signing Algorithm](#16-signing-algorithm)
 - [17. License](#17-license)
 
 ---
 
-## 1. 功能概览
+## 1. Feature Overview
 
-| 特性 | 说明 |
-|------|------|
-| **39 个工具，7 个模块** | 行情 → 钱包 → 现货 → TradFi → 理财 → 永续交易 → 诊断，覆盖完整交易链路 |
-| **安全控制** | 三级权限分级、参数前置校验、批量操作二次确认 |
-| **可追溯** | 每次调用返回 `traceId`，可回查原始 HTTP 请求/响应 |
-| **零基础设施** | 本地 stdio 进程，API Key 不离开本机 |
-| **一键安装** | `yubit setup` 自动检测 AI 工具并配置 |
+| Feature | Description |
+|---------|-------------|
+| **39 tools, 7 modules** | Market → Wallet → Spot → TradFi → Earn → Perp Trade → Diagnostics, covering the full trading workflow |
+| **Security controls** | Three-tier permission levels, pre-validation of parameters, confirmation required for batch operations |
+| **Traceability** | Every call returns a `traceId` so you can trace the original HTTP request and response |
+| **No extra infrastructure required** | Runs as a local stdio process, so your API key never leaves your machine |
+| **One-click setup** | `yubit setup` auto-detects supported AI tools and configures them |
 
-## 2. 模块
+## 2. Modules
 
-| 模块 | 工具数 | 说明 | 认证 |
-|------|:------:|------|:----:|
-| `market` | 9 | 实时行情、K 线、深度、资金费率、合约规格、风险限额 | 无需 |
-| `wallet` | 3 | 资金账户资产、全账户总资产（USDT 计价）、账户间划转 | API Key |
-| `spot` | 1 | 现货账户资产列表（总额、可用、冻结） | API Key |
-| `tradfi` | 1 | TradFi 账户详情（余额、净值、保证金、浮动盈亏） | API Key |
-| `earn` | 1 | 理财账户资产与收益明细 | API Key |
-| `perp` | 21 | 永续余额/持仓/挂单/历史/资金流水 + 下单/安全加仓/撤单/止盈止损/杠杆/仓位模式 | API Key + Trade |
-| `diagnostics` | 3 | 能力探测（`getCapabilities`）、链路追踪、排障 | 无需 |
+| Module | Tools | Description | Auth |
+|--------|:-----:|-------------|:----:|
+| `market` | 9 | Real-time quotes, candlesticks, order book depth, funding rates, contract specs, and risk limits | None |
+| `wallet` | 3 | Funding account assets, total portfolio net worth (USDT-denominated), inter-account transfer | API Key |
+| `spot` | 1 | Spot account asset list (total, available, frozen) | API Key |
+| `tradfi` | 1 | TradFi account details (balance, equity, margin, floating P&L) | API Key |
+| `earn` | 1 | Earn account assets and earnings breakdown | API Key |
+| `perp` | 21 | Perp balances, positions, open orders, history, account ledger, plus order placement, safe add-to-position, cancellation, TP/SL, leverage, and position mode | API Key + Trade |
+| `diagnostics` | 3 | Capability probe (`getCapabilities`), request tracing, troubleshooting | None |
 
-> 完整使用规则、账户语义、交易约束和排障规则见 [`skills/yubit/SKILL.md`](skills/yubit/SKILL.md)。
+> Full usage rules, account semantics, trading constraints, and troubleshooting rules are in [`skills/yubit/SKILL.md`](skills/yubit/SKILL.md).
 
 ---
 
-## 3. 快速开始
+## 3. Quick Start
 
-**前置条件**：Node.js >= 19
+**Prerequisites**: Node.js >= 19
 
-适用范围：
+Recommended installation paths:
 
-- `OpenClaw Hub`：适合 OpenClaw 用户先安装运行时，再安装公开 skill `yubit`
-- `npm / npx`：适合大多数 MCP 客户端，包括 Claude Code、Codex、Cursor、LobeChat Desktop，也适合 OpenClaw 本地接入
-- `源码安装`：适合本地开发、调试和直接从仓库运行
+- `OpenClaw Hub`: For OpenClaw users. Install the runtime first, then install the public `yubit` skill.
+- `npm / npx`: Recommended for most MCP clients, including Claude Code, Codex, Cursor, LobeChat Desktop, and local OpenClaw integration.
+- `Source install`: Best for local development, debugging, or running directly from the repository.
 
-### 3.1 OpenClaw Hub 安装
+### 3.1 OpenClaw Hub Install
 
 ```bash
 npm install -g @yubit/exchange-skill
@@ -85,29 +87,29 @@ yubit setup --client openclaw
 openclaw skills install yubit
 ```
 
-完成后重新打开一个新的 OpenClaw 会话，让 `yubit` skill 和 MCP 生效。
+After setup finishes, start a new OpenClaw session for the `yubit` skill so the MCP server is loaded.
 
-### 3.2 通用安装
+### 3.2 General Install
 
 ```bash
-# npm 全局安装
+# Global npm install
 npm install -g @yubit/exchange-skill
 yubit setup
 
-# 或 npx（无需安装）
+# Or npx (no install required)
 npx @yubit/exchange-skill setup
 ```
 
-安装向导会自动检测已安装的 AI 工具、配置 API 凭证、注册 MCP Server。
-首次 setup 会要求输入：
+The setup wizard automatically detects supported AI tools, configures your API credentials, and registers the MCP server.
+During first-time setup, you will be prompted for:
 
 - `API Key`
 - `API Secret`
 - `API Base URL`
 
-凭证统一存储在 `~/.exchange-skill/config.json`，多客户端共享，换 key 只需 `yubit config init`。
+Credentials are stored in `~/.exchange-skill/config.json` and shared across all clients. To rotate your keys, run `yubit config init`.
 
-### 3.3 源码安装
+### 3.3 Source Install
 
 ```bash
 git clone https://github.com/yubit-exchange/exchange-skill.git
@@ -115,13 +117,13 @@ cd exchange-skill
 ./setup/install.sh
 ```
 
-这条路径适合直接从源码运行或本地开发调试。
+Use this path when running from source or doing local development and debugging.
 
 ---
 
-## 4. 手动接入（可选）
+## 4. Manual Setup (Optional)
 
-如果你不想走 `yubit setup`，或者希望手工控制 MCP 配置，可以使用以下方式。
+If you prefer not to use `yubit setup`, or want to control the MCP configuration manually, use the following methods.
 
 ### 4.1 OpenClaw
 
@@ -171,279 +173,279 @@ EXCHANGE_ENABLE_TRADE = "true"
 
 ### 4.5 LobeChat Desktop
 
-> Web 版不支持 STDIO MCP，必须使用 Desktop 版。
+> The web version does not support STDIO MCP. You must use the desktop app.
 
-插件图标 → **添加 MCP 插件** → **快速导入 JSON** → 粘贴与 Cursor 相同格式 → 连接类型选 **STDIO**。
-
----
-
-## 5. 自然语言示例
-
-| 你说 | 调用的工具 |
-|------|----------|
-| "BTC 现在多少钱" | `getTicker` |
-| "BTC 日线 K 线" | `getKlines` |
-| "我的合约余额" | `perpGetBalance` |
-| "我的资金账户有多少钱" | `fundGetAssets` |
-| "我的现货余额" | `spotGetBalance` |
-| "我的 TradFi 账户余额" | `tradfiGetBalance` |
-| "我的理财余额" | `earnGetBalance` |
-| "我的总资产" | `getPortfolioNetWorth` |
-| "查 BTC 持仓" | `perpGetPositions` |
-| "查 BTC 合约资金流水" | `perpGetWalletFlowRecords` |
-| "开多 ETH 0.01 张" | `perpCreateOrder` |
-| "给 BTC 多仓加仓 0.01 张" | `perpAddToPosition` |
-| "合仓模式下给 BTC 多仓加仓 0.01 张" | `perpAddToPosition` |
-| "ETH 多单止盈 3000 止损 1800" | `perpCreateTpSl` |
-| "ETH 当前是什么模式，杠杆多少" | `perpGetModeConfigs` |
-| "平掉 ETH 多单" | `perpClosePosition` |
-| "从资金账户划 10 USDT 到合约" | `transfer` |
-| "这个 MCP 能做什么" | `getCapabilities` |
-
-> 对外使用建议：
-> - **新开仓** → `perpCreateOrder`
-> - **给已有仓位加仓** → `perpAddToPosition`
-> - 尤其在**分仓模式**下，不要把“加仓已有仓位”直接等同于再次 `perpCreateOrder`
+Open the plugin menu → **Add MCP Plugin** → **Quick Import JSON** → paste the same JSON shown for Cursor above → select **STDIO** as the connection type.
 
 ---
 
-## 6. 可用工具
+## 5. Natural Language Examples
 
-### 6.1 行情（公开，无需认证）
+| You say | Tool called |
+|---------|-------------|
+| "What's the BTC price now" | `getTicker` |
+| "BTC daily candlestick" | `getKlines` |
+| "My contract balance" | `perpGetBalance` |
+| "How much is in my funding account" | `fundGetAssets` |
+| "My spot balance" | `spotGetBalance` |
+| "My TradFi account balance" | `tradfiGetBalance` |
+| "My earn balance" | `earnGetBalance` |
+| "My total assets" | `getPortfolioNetWorth` |
+| "Check BTC position" | `perpGetPositions` |
+| "Check my BTC perp account ledger" | `perpGetWalletFlowRecords` |
+| "Open a 0.01 ETH long position" | `perpCreateOrder` |
+| "Add 0.01 contracts to my BTC long position" | `perpAddToPosition` |
+| "Add 0.01 contracts to my BTC long in separate-position mode" | `perpAddToPosition` |
+| "Set ETH long TP at 3000, SL at 1800" | `perpCreateTpSl` |
+| "What mode and leverage is ETH on" | `perpGetModeConfigs` |
+| "Close my ETH long" | `perpClosePosition` |
+| "Transfer 10 USDT from funding account to contract" | `transfer` |
+| "What can this MCP do" | `getCapabilities` |
 
-| 工具 | 说明 |
-|------|------|
-| `getTicker` | 实时行情（价格、涨跌幅、成交量、资金费率） |
-| `getOrderbook` | 买卖盘深度 |
-| `getKlines` | K 线（OHLCV），interval: 1/5/15/60/240/D |
-| `getMarkPriceKlines` | 标记价 K 线（OHLC），limit 上限 200 |
-| `getFundingRate` | 当前资金费率和下次结算时间 |
-| `getFundingRateHistory` | 历史资金费率 |
-| `getInstruments` | 合约规格（最小数量、价格精度、杠杆范围） |
-| `getRiskLimits` | 风险限额表（分档最大名义、保证金率、最大杠杆） |
-| `getRecentTrades` | 最近成交记录 |
-
-### 6.2 钱包（需要 API Key）
-
-| 工具 | 说明 |
-|------|------|
-| `fundGetAssets` | **资金账户**资产列表（总权益、可用、冻结）。与合约/现货/TradFi 账户独立 |
-| `getPortfolioNetWorth` | 全账户总资产（USDT 计价） |
-| `transfer` | 账户间划转（FUNDING / TRADING / SPOT / TRADFI） |
-
-### 6.3 现货（需要 API Key）
-
-| 工具 | 说明 |
-|------|------|
-| `spotGetBalance` | **现货账户**资产列表（总额、可用、冻结）。与资金账户、永续账户独立 |
-
-### 6.4 TradFi（需要 API Key）
-
-| 工具 | 说明 |
-|------|------|
-| `tradfiGetBalance` | **TradFi 账户**详情（余额、净值、保证金、可用保证金、杠杆、浮动盈亏） |
-
-### 6.5 理财（需要 API Key）
-
-| 工具 | 说明 |
-|------|------|
-| `earnGetBalance` | **理财账户**资产与收益明细（币种、余额、净值、累计/昨日收益） |
-
-### 6.6 永续查询（需要 API Key）
-
-| 工具 | 说明 |
-|------|------|
-| `perpGetBalance` | **合约账户**余额（权益、可用、保证金、未实现盈亏） |
-| `perpGetPositions` | 当前持仓 |
-| `perpGetModeConfigs` | 杠杆、全仓/逐仓、合仓/分仓配置（无需持仓） |
-| `perpGetFeeRate` | Maker/Taker 手续费率 |
-| `perpGetOpenOrders` | 活动挂单（`orderFilter=StopOrder` 过滤 TP/SL） |
-| `perpGetOrderHistory` | 历史订单 |
-| `perpGetExecutions` | 成交明细 |
-| `perpGetClosedPnl` | 已平仓盈亏 |
-| `perpGetWalletFlowRecords` | 合约资金流水 / 账单流水（划转、已实现盈亏、资金费用、手续费；时间参数用 Unix 秒） |
-
-### 6.7 永续交易（需要 API Key + `EXCHANGE_ENABLE_TRADE=true`）
-
-| 工具 | 说明 |
-|------|------|
-| `perpCreateOrder` | 下单（市价/限价/条件单）。本交易所下单必须传 `positionIdx`：`1=Long`，`2=Short` |
-| `perpAddToPosition` | 给**已有仓位**安全加仓。分仓模式会自动命中唯一仓位或要求显式 `pzLinkId`，并回读验证没有误开新分仓 |
-| `perpModifyOrder` | 改单（价格/数量/TP/SL） |
-| `perpCancelOrder` | 撤单 |
-| `perpCancelAllOrders` | 批量撤单（按 settleCoin 需 `confirmBatch=true`） |
-| `perpSetLeverage` | 设置杠杆（symbol 级或分仓级） |
-| `perpCreateTpSl` | 创建止盈止损（含高级限价和移动止损） |
-| `perpReplaceTpSl` | 修改 TP/SL 子单 |
-| `perpSwitchPositionMode` | 切换合仓/分仓 |
-| `perpSwitchMarginMode` | 切换全仓/逐仓 |
-| `perpAddMargin` | 调整仓位保证金（正加负减，仅逐仓） |
-| `perpClosePosition` | 整仓市价平仓 |
-
-### 6.8 诊断（无需认证）
-
-| 工具 | 说明 |
-|------|------|
-| `getCapabilities` | 当前会话的模块、工具列表、认证状态 |
-| `getTrace` | 按 traceId 查看完整请求链路 |
-| `searchTraces` | 按 traceId/orderId/symbol/toolName 等搜索 trace |
+> Usage recommendations:
+> - **Open new position** → `perpCreateOrder`
+> - **Add to existing position** → `perpAddToPosition`
+> - Especially in **separate-position mode**, do not treat "add to existing position" as simply calling `perpCreateOrder` again
 
 ---
 
-## 7. 权限分级
+## 6. Available Tools
 
-| 条件 | 可用工具 |
-|------|---------|
-| 无 API Key | 行情 + 诊断（12 个） |
-| 有 API Key | + 钱包查询 + 现货查询 + TradFi 查询 + 理财查询 + 永续查询（26 个） |
-| 有 API Key + `EXCHANGE_ENABLE_TRADE=true` | 全部（39 个） |
+### 6.1 Market (Public, no auth required)
+
+| Tool | Description |
+|------|-------------|
+| `getTicker` | Real-time quote (price, change, volume, funding rate) |
+| `getOrderbook` | Bid/ask order book depth |
+| `getKlines` | Candlesticks (OHLCV), intervals: 1/5/15/60/240/D |
+| `getMarkPriceKlines` | Mark price candlesticks (OHLC), max limit 200 |
+| `getFundingRate` | Current funding rate and next settlement time |
+| `getFundingRateHistory` | Historical funding rates |
+| `getInstruments` | Contract specs (min qty, price precision, leverage range) |
+| `getRiskLimits` | Risk limit tiers (max notional per tier, margin rate, max leverage) |
+| `getRecentTrades` | Recent trade records |
+
+### 6.2 Wallet (API Key required)
+
+| Tool | Description |
+|------|-------------|
+| `fundGetAssets` | **Funding account** asset list (total equity, available, frozen). Independent from contract/spot/TradFi accounts |
+| `getPortfolioNetWorth` | Total portfolio net worth (USDT-denominated) |
+| `transfer` | Inter-account transfer (FUNDING / TRADING / SPOT / TRADFI) |
+
+### 6.3 Spot (API Key required)
+
+| Tool | Description |
+|------|-------------|
+| `spotGetBalance` | **Spot account** asset list (total, available, frozen). Independent from fund and perp accounts |
+
+### 6.4 TradFi (API Key required)
+
+| Tool | Description |
+|------|-------------|
+| `tradfiGetBalance` | **TradFi account** details (balance, equity, margin, available margin, leverage, floating P&L) |
+
+### 6.5 Earn (API Key required)
+
+| Tool | Description |
+|------|-------------|
+| `earnGetBalance` | **Earn account** assets and earnings breakdown (currency, balance, equity, cumulative/yesterday earnings) |
+
+### 6.6 Perp Query (API Key required)
+
+| Tool | Description |
+|------|-------------|
+| `perpGetBalance` | **Contract account** balance (equity, available, margin, unrealized P&L) |
+| `perpGetPositions` | Current positions |
+| `perpGetModeConfigs` | Leverage plus cross/isolated margin and merged/separate position-mode config (no open position required) |
+| `perpGetFeeRate` | Maker/Taker fee rates |
+| `perpGetOpenOrders` | Active open orders (`orderFilter=StopOrder` to filter TP/SL) |
+| `perpGetOrderHistory` | Order history |
+| `perpGetExecutions` | Trade execution details |
+| `perpGetClosedPnl` | Closed position P&L |
+| `perpGetWalletFlowRecords` | Perp account ledger / account statement (transfers, realized P&L, funding fees, trading fees; time parameters are Unix seconds) |
+
+### 6.7 Perp Trade (API Key + `EXCHANGE_ENABLE_TRADE=true`)
+
+| Tool | Description |
+|------|-------------|
+| `perpCreateOrder` | Place order (market/limit/conditional). This exchange requires `positionIdx`: `1=Long`, `2=Short` |
+| `perpAddToPosition` | Safely add to an **existing position**. In separate-position mode, it auto-targets the unique position or requires explicit `pzLinkId`, then reads back to verify no accidental new sub-position was opened |
+| `perpModifyOrder` | Amend order (price/qty/TP/SL) |
+| `perpCancelOrder` | Cancel order |
+| `perpCancelAllOrders` | Batch cancel orders (by settleCoin requires `confirmBatch=true`) |
+| `perpSetLeverage` | Set leverage (symbol-level or sub-position-level) |
+| `perpCreateTpSl` | Create take-profit/stop-loss (including advanced limit and trailing stop) |
+| `perpReplaceTpSl` | Modify TP/SL sub-order |
+| `perpSwitchPositionMode` | Switch between separate and merged position mode |
+| `perpSwitchMarginMode` | Switch between cross/isolated margin |
+| `perpAddMargin` | Adjust position margin (positive to add, negative to reduce; isolated margin only) |
+| `perpClosePosition` | Close entire position at market price |
+
+### 6.8 Diagnostics (No auth required)
+
+| Tool | Description |
+|------|-------------|
+| `getCapabilities` | Modules, tools, and authentication status available in the current session |
+| `getTrace` | View full request chain by traceId |
+| `searchTraces` | Search traces by traceId/orderId/symbol/toolName etc. |
 
 ---
 
-## 8. 安全机制
+## 7. Permission Levels
 
-- **参数前置校验** — symbol、数量范围/步长、价格范围、TP/SL 方向、杠杆范围，不合规直接拒绝
-- **批量操作保护** — `perpCancelAllOrders`/`perpClosePosition` 按 settleCoin 操作需 `confirmBatch=true`
-- **分仓加仓保护** — `perpAddToPosition` 会在服务端先查当前持仓，分仓模式下自动命中唯一仓位或要求显式 `pzLinkId`，并回读验证没有误开新分仓
-- **意图分流** — 文档与 skill 默认把“新开仓”和“加仓已有仓位”分成两条路径，减少模型把“加仓”误执行成“新开一笔分仓”的概率
-- **开仓后空仓排障顺序** — 对 `Filled` 的市价开仓，如果随后 `perpGetPositions(symbol)` 为空，先查 `perpGetOrderHistory` + `perpGetExecutions` + `perpGetClosedPnl` 判断是否被后续反向平仓；不要先猜 symbol 映射或仓位延迟
-- **审计日志** — 所有调用记录到 `.data/audit.log`（JSON Lines），敏感信息自动脱敏
-- **Trace 记录** — 每次调用记录到 `.data/trace-records.jsonl`，含原始 HTTP 请求/响应，保留 7 天 / 最多 1000 条
-- **凭证集中管理** — `~/.exchange-skill/config.json`，客户端配置不含 API Key
-
-### 8.1 Filled But Flat 排障
-
-如果市价开仓返回成功、成交也存在，但随后查仓位为空，推荐固定按这个顺序排查：
-
-1. `perpGetOrderHistory(symbol, orderId)`：确认开仓单状态是 `Filled`
-2. `perpGetExecutions(symbol, orderId)`：确认实际成交数量、价格、时间
-3. `perpGetPositions(symbol)`：确认当前确实为空仓
-4. `perpGetClosedPnl(symbol, limit='10')`：查是否在几秒内出现了同数量、反方向的已平仓记录
-5. 如有需要，再用 `perpGetOrderHistory(symbol, closeOrderId)` 看平仓单是否为 `reduceOnly=true`
-
-注意：
-
-- 订单历史里出现 `M1ETHUSDT` 这类值，通常只是交易所的本地 symbol 表示，不等于“仓位藏在别的 symbol 下”
-- 更常见的真实原因是：仓位已经被另一笔后续平仓单关掉了
+| Condition | Available Tools |
+|-----------|----------------|
+| No API Key | Market + Diagnostics (12 tools) |
+| API Key provided | + Wallet query + Spot query + TradFi query + Earn query + Perp query (26 tools) |
+| API Key + `EXCHANGE_ENABLE_TRADE=true` | All (39 tools) |
 
 ---
 
-## 9. 环境变量
+## 8. Security Mechanisms
 
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
+- **Pre-validation** — symbol, quantity range/step, price range, TP/SL direction, leverage range are validated upfront and rejected if non-compliant
+- **Batch operation protection** — `perpCancelAllOrders`/`perpClosePosition` by settleCoin requires `confirmBatch=true`
+- **Separate-position add-to-position protection** — `perpAddToPosition` queries current positions on the server first; in separate-position mode, it auto-targets the unique position or requires explicit `pzLinkId`, then reads back to verify no accidental new sub-position was opened
+- **Intent routing** — documentation and skills route "open new position" and "add to existing position" as two separate paths, reducing the risk of the model misinterpreting "add to position" as "open a new sub-position"
+- **Filled-order-but-no-position troubleshooting** — if a market order to open a position is marked `Filled` but `perpGetPositions(symbol)` returns empty, first check `perpGetOrderHistory` + `perpGetExecutions` + `perpGetClosedPnl` to determine whether the position was closed by a later reverse order; do not start by guessing about symbol mapping or position delays
+- **Audit log** — all calls are logged to `.data/audit.log` (JSON Lines), with sensitive information automatically redacted
+- **Trace records** — each call is recorded to `.data/trace-records.jsonl`, including raw HTTP request/response, retained for 7 days / max 1000 entries
+- **Centralized credential management** — `~/.exchange-skill/config.json`; client configs do not contain API Key
+
+### 8.1 Troubleshooting: Filled Order but No Open Position
+
+If a market order to open a position succeeds and an execution is recorded, but the subsequent position query is empty, follow this sequence:
+
+1. `perpGetOrderHistory(symbol, orderId)`: Confirm open order status is `Filled`
+2. `perpGetExecutions(symbol, orderId)`: Confirm actual fill qty, price, and time
+3. `perpGetPositions(symbol)`: Confirm the position is indeed empty
+4. `perpGetClosedPnl(symbol, limit='10')`: Check whether a closed-P&L record with the same size and opposite direction appeared within seconds
+5. If needed, use `perpGetOrderHistory(symbol, closeOrderId)` to check if the close order has `reduceOnly=true`
+
+Notes:
+
+- Values like `M1ETHUSDT` in order history are usually just the exchange's internal symbol format. They do not mean the position is hidden under a different symbol.
+- The more common real cause is that the position was already closed by a later close order.
+
+---
+
+## 9. Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
 | `EXCHANGE_API_KEY` | — | API Key |
 | `EXCHANGE_API_SECRET` | — | API Secret |
-| `EXCHANGE_BASE_URL` | — | API 地址（必须显式配置） |
-| `EXCHANGE_TLS_REJECT` | `true` | TLS 验证（测试环境可设 `false`） |
-| `EXCHANGE_RECV_WINDOW` | `5000` | 请求有效窗口（ms） |
-| `EXCHANGE_ENABLE_TRADE` | `false` | 启用交易工具 |
+| `EXCHANGE_BASE_URL` | — | API base URL (must be explicitly configured) |
+| `EXCHANGE_TLS_REJECT` | `true` | TLS verification (set `false` for test environments) |
+| `EXCHANGE_RECV_WINDOW` | `5000` | Request validity window (ms) |
+| `EXCHANGE_ENABLE_TRADE` | `false` | Enable trading tools |
 
 ---
 
 ## 10. Agent Skills
 
-| Skill | 说明 | 认证 |
-|-------|------|:----:|
-| [`yubit`](skills/yubit/SKILL.md) | 完整 Yubit skill，覆盖市场、钱包、现货、TradFi、理财、永续交易与排障规则 | 按工具而定 |
+| Skill | Description | Auth |
+|-------|-------------|:----:|
+| [`yubit`](skills/yubit/SKILL.md) | Full Yubit skill covering market, wallet, spot, TradFi, earn, perpetual trading, and troubleshooting rules | Per tool |
 
 ---
 
-## 11. CLI 命令
+## 11. CLI Commands
 
-| 命令 | 说明 |
-|------|------|
-| `yubit setup` | 一键安装（自动检测 AI 工具） |
-| `yubit setup --client <name>` | 指定客户端（openclaw / claude-code / codex / cursor / lobechat） |
-| `yubit setup --read-only` | 只读模式 |
-| `yubit config init` | 配置 API 凭证 |
-| `yubit config show` | 查看配置（脱敏） |
-| `yubit doctor` | 环境诊断 |
-| `yubit status` | 安装状态 |
-| `yubit uninstall` | 卸载 |
-| `yubit start` | 启动 MCP Server |
+| Command | Description |
+|---------|-------------|
+| `yubit setup` | One-click setup (auto-detects supported AI tools) |
+| `yubit setup --client <name>` | Specify client (openclaw / claude-code / codex / cursor / lobechat) |
+| `yubit setup --read-only` | Configure the server in read-only mode |
+| `yubit config init` | Configure API credentials |
+| `yubit config show` | Show config (redacted) |
+| `yubit doctor` | Environment diagnostics |
+| `yubit status` | Installation status |
+| `yubit uninstall` | Uninstall |
+| `yubit start` | Start MCP Server |
 
 ---
 
-## 12. 项目结构
+## 12. Project Structure
 
 ```
 exchange-skill/
-├── mcp-server.js           # MCP Server 入口
+├── mcp-server.js           # MCP Server entry point
 ├── bin/cli.js              # CLI
 ├── lib/
-│   ├── signer.js           # HMAC-SHA256 签名
-│   ├── http.js             # HTTP 客户端（含限流）
-│   ├── config.js           # 配置加载
-│   ├── validate.js         # 参数校验
-│   ├── normalize.js        # 响应标准化
-│   ├── audit.js            # 审计日志
-│   ├── trace-store.js      # Trace 存储/检索
-│   ├── capabilities.js     # 能力快照构建
-│   └── setup/              # 客户端管理
+│   ├── signer.js           # HMAC-SHA256 signing
+│   ├── http.js             # HTTP client (with rate limiting)
+│   ├── config.js           # Config loader
+│   ├── validate.js         # Parameter validation
+│   ├── normalize.js        # Response normalization
+│   ├── audit.js            # Audit logging
+│   ├── trace-store.js      # Trace storage/retrieval
+│   ├── capabilities.js     # Capability snapshot builder
+│   └── setup/              # Client management
 ├── tools/
-│   ├── market.js           # 行情（9 工具）
-│   ├── spot.js             # 现货查询（1 工具）
-│   ├── tradfi.js           # TradFi 查询（1 工具）
-│   ├── earn.js             # 理财查询（1 工具）
-│   ├── perp-query.js       # 永续查询（9 工具）
-│   ├── perp.js             # 永续交易（12 工具）
-│   ├── wallet.js           # 钱包（3 工具）
-│   └── diagnostics.js      # 诊断（3 工具）
-├── skills/                 # AI Agent 行为规范
-└── test/                   # 单元测试 + 冒烟测试
+│   ├── market.js           # Market (9 tools)
+│   ├── spot.js             # Spot query (1 tool)
+│   ├── tradfi.js           # TradFi query (1 tool)
+│   ├── earn.js             # Earn query (1 tool)
+│   ├── perp-query.js       # Perp query (9 tools)
+│   ├── perp.js             # Perp trade (12 tools)
+│   ├── wallet.js           # Wallet (3 tools)
+│   └── diagnostics.js      # Diagnostics (3 tools)
+├── skills/                 # AI Agent behavior specs
+└── test/                   # Unit tests + smoke tests
 ```
 
 ---
 
-## 13. 测试
+## 13. Testing
 
 ```bash
-npm test                    # 单元测试（无需网络）
-npm run test:smoke          # 冒烟测试（需 API Key，会执行真实交易）
-npm run test:all            # 全部
+npm test                    # Unit tests (no network required)
+npm run test:smoke          # Smoke tests (requires API Key, executes real trades)
+npm run test:all            # All tests
 ```
 
-> 冒烟测试会真实下单/撤单/平仓，请使用专用测试账号。
+> Smoke tests will place real orders, cancel them, and close positions. Use a dedicated test account.
 
 ---
 
-## 14. 开发贡献
+## 14. Contributing
 
-新增工具遵循现有命名规则：`{产品}{操作}` camelCase，产品专属工具加前缀（`perp`/`spot`/`tradfi`/`earn`/`tapTrading`），共享工具无前缀。
+New tools should follow the existing naming convention: `{product}{Action}` camelCase. Product-specific tools get a prefix (`perp`/`spot`/`tradfi`/`earn`/`tapTrading`); shared tools have no prefix.
 
 ```bash
-npm test && npm run test:smoke    # 改动后必须通过
+npm test && npm run test:smoke    # Must pass after any changes
 ```
 
 ---
 
-## 15. 常见问题
+## 15. FAQ
 
-| 问题 | 解决 |
-|------|------|
-| MCP Server 启动后没输出 | 正常，stdio 模式通过标准输入输出通信 |
-| 连接不上 | `yubit doctor` 诊断 |
-| LobeChat 连接失败 | 必须用 Desktop 版，路径用绝对路径 |
-| 签名错误 (401) | 检查 Key/Secret（`yubit config show`）、本机时间是否准确 |
-| 下单被拒绝 | 检查数量范围、价格范围、余额、TP/SL 方向 |
-| 换 Key 后还是旧的 | `yubit config init` 重新配置 |
+| Issue | Solution |
+|-------|----------|
+| MCP Server starts with no output | Normal — stdio mode communicates via stdin/stdout |
+| Cannot connect | Run `yubit doctor` for diagnostics |
+| LobeChat connection failure | Must use Desktop version; use absolute paths |
+| Signature error (401) | Check Key/Secret (`yubit config show`), verify system clock accuracy |
+| Order rejected | Check quantity range, price range, balance, TP/SL direction |
+| Still using old key after rotation | Run `yubit config init` to reconfigure |
 
 ---
 
-## 16. 签名算法
+## 16. Signing Algorithm
 
 ```
-载荷 = timestamp + apiKey + recvWindow + payload
-签名 = HMAC-SHA256(apiSecret, 载荷).hex()
+payload = timestamp + apiKey + recvWindow + payload
+signature = HMAC-SHA256(apiSecret, payload).hex()
 ```
 
-| Header | 值 |
-|--------|-----|
+| Header | Value |
+|--------|-------|
 | `MF-ACCESS-API-KEY` | API Key |
-| `MF-ACCESS-TIMESTAMP` | 毫秒时间戳 |
-| `MF-ACCESS-RECV-WINDOW` | 有效窗口 |
-| `MF-ACCESS-SIGN` | hex 签名 |
+| `MF-ACCESS-TIMESTAMP` | Millisecond timestamp |
+| `MF-ACCESS-RECV-WINDOW` | Validity window |
+| `MF-ACCESS-SIGN` | Hex signature |
 
 ---
 
