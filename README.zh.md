@@ -336,7 +336,7 @@ EXCHANGE_ENABLE_TRADE = "true"
 |------|--------|------|
 | `EXCHANGE_API_KEY` | — | API Key |
 | `EXCHANGE_API_SECRET` | — | API Secret |
-| `EXCHANGE_BASE_URL` | — | API 地址（必须显式配置） |
+| `EXCHANGE_BASE_URL` | `https://openapi.yubit.com` | API 地址 |
 | `EXCHANGE_TLS_REJECT` | `true` | TLS 验证（测试环境可设 `false`） |
 | `EXCHANGE_RECV_WINDOW` | `5000` | 请求有效窗口（ms） |
 | `EXCHANGE_ENABLE_TRADE` | `false` | 启用交易工具 |
@@ -358,6 +358,7 @@ EXCHANGE_ENABLE_TRADE = "true"
 | `yubit setup` | 一键安装（自动检测 AI 工具） |
 | `yubit setup --client <name>` | 指定客户端（openclaw / claude-code / codex / cursor / lobechat） |
 | `yubit setup --read-only` | 只读模式 |
+| `yubit setup --yes` | 跳过启用交易的确认提示（CI / 非交互场景） |
 | `yubit config init` | 配置 API 凭证 |
 | `yubit config show` | 查看配置（脱敏） |
 | `yubit doctor` | 环境诊断 |

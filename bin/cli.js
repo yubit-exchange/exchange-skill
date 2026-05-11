@@ -27,7 +27,7 @@ const flags = parseFlags(args);
 
 async function cmdSetup() {
   const { detectClients, getClient } = require('../lib/setup/clients');
-  const { createRL, askNumber } = require('../lib/setup/prompt');
+  const { createRL, askNumber, askYesNo } = require('../lib/setup/prompt');
   const credential = require('../lib/setup/credential');
 
   process.stderr.write('\nYubit MCP Setup\n\n');
@@ -82,7 +82,21 @@ async function cmdSetup() {
   }
 
   // 3. 交易开关
-  const enableTrade = !flags.readOnly;
+  let enableTrade;
+  if (flags.readOnly) {
+    enableTrade = false;
+  } else if (flags.yes) {
+    enableTrade = true;
+  } else {
+    process.stderr.write(`\n  WARN  About to enable trading on production (${config.baseUrl}).\n`);
+    process.stderr.write(`        Tools like perpCreateOrder and transfer will move real funds.\n`);
+    const rl = createRL();
+    enableTrade = await askYesNo(rl, '  Enable trading capabilities?', false);
+    rl.close();
+    if (!enableTrade) {
+      process.stderr.write(`  Continuing in read-only mode.\n`);
+    }
+  }
 
   // 4. 配置客户端
   process.stderr.write(`\nConfiguring ${client.name}...\n`);
@@ -182,7 +196,7 @@ function showHelp() {
 Yubit MCP — Perpetual Futures Trading for AI Tools
 
 Usage:
-  yubit setup [--client <name>] [--read-only]     Install and configure
+  yubit setup [--client <name>] [--read-only] [--yes]    Install and configure
   yubit config init                                Setup API credentials
   yubit config show                                Show current config
   yubit status                                     Check installation status

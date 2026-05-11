@@ -336,7 +336,7 @@ Notes:
 |----------|---------|-------------|
 | `EXCHANGE_API_KEY` | — | API Key |
 | `EXCHANGE_API_SECRET` | — | API Secret |
-| `EXCHANGE_BASE_URL` | — | API base URL (must be explicitly configured) |
+| `EXCHANGE_BASE_URL` | `https://openapi.yubit.com` | API base URL |
 | `EXCHANGE_TLS_REJECT` | `true` | TLS verification (set `false` for test environments) |
 | `EXCHANGE_RECV_WINDOW` | `5000` | Request validity window (ms) |
 | `EXCHANGE_ENABLE_TRADE` | `false` | Enable trading tools |
@@ -358,6 +358,7 @@ Notes:
 | `yubit setup` | One-click setup (auto-detects supported AI tools) |
 | `yubit setup --client <name>` | Specify client (openclaw / claude-code / codex / cursor / lobechat) |
 | `yubit setup --read-only` | Configure the server in read-only mode |
+| `yubit setup --yes` | Skip the trading-enable confirmation prompt (CI / non-interactive) |
 | `yubit config init` | Configure API credentials |
 | `yubit config show` | Show config (redacted) |
 | `yubit doctor` | Environment diagnostics |
